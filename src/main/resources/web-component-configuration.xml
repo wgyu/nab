@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component-configuration
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://tis.co.jp/nablarch/component-configuration"
+    xsi:schemaLocation="http://tis.co.jp/nablarch/component-configuration  /component-configuration.xsd">
+
+  <!-- テーブル定義 -->
+  <import file="nablarch/schema-config.xml" />
+
+  
+  <!-- 環境設定ファイル -->
+  <config-file file="common.config" />
+  <config-file file="env.config" />
+
+  <!-- バリデーション -->
+  <import file="wgyu/nab/core/validation.xml" />
+  
+  <!-- Nablarch共通機能 -->
+  <!-- コード機能 -->
+  <import file="nablarch/common/code.xml"/>
+  <!-- 自動採番型を持たないRDBMSで、ユニバーサルDAOを使用するための設定 -->
+  <import file="nablarch/common/dao.xml" />
+
+  <!-- web固有設定の読み込み -->
+  <!-- データベース設定 -->
+  <!--
+  下記設定ファイルを使用することで、JNDIを用いてコネクションがルックアップされる
+  ルックアップに使用する名前は、configファイル中で、「nablarch.connectionFactory.jndiResourceName」というプレースホルダーに設定する。
+
+  ローカルのデータソースからコネクションを取得したい場合は、アーキタイプから生成した直後のプロジェクトに含まれるdb-for-webui_dev.xmlを参考に設定すること。
+  -->
+  <import file="nablarch/webui/db-for-webui.xml"/>
+
+  <!-- エラーページ設定 -->
+  <import file="nablarch/webui/error-page-for-webui.xml" />
+
+  <!-- ファイルパス設置 -->
+  <import file="nablarch/webui/filepath-for-webui.xml" />
+
+  <!-- インターセプタの実行順定義 -->
+  <import file="nablarch/webui/interceptors.xml" />
+
+  <!-- ファイルアップロード機能設定 -->
+  <import file="nablarch/webui/multipart.xml" />
+
+  <!-- カスタムタグ設定 -->
+  <import file="nablarch/webui/nablarch-tag.xml" />
+
+  <!-- 二重サブミット防止機能 -->
+  <component name="doubleSubmissionHandler"
+             class="nablarch.common.web.token.BasicDoubleSubmissionHandler">
+    <!-- 二重サブミットと判定した場合の遷移先のリソースパス -->
+    <property name="path" value="/WEB-INF/view/common/errorPages/doubleSubmissionError.jsp" />
+    <!-- 二重サブミットと判定した場合の遷移先で表示するエラーメッセージのメッセージID -->
+    <property name="messageId" value="${nablarch.doubleSubmissionHandler.messageId}" />
+    <!-- 二重サブミットと判定した場合のレスポンスステータス。デフォルトは400 -->
+    <property name="statusCode" value="400" />
+  </component>
+
+  <!-- hidden暗号化機能を使用しないリクエストID -->
+  <list name="noHiddenEncryptionRequestIds">
+    <!-- <value></value> -->
+  </list>
+
+  <!-- HTTPリクエストマッピング機能 -->
+  <import file="com/nablarch/example/app/web/webui/request-mapper-for-webui.xml" />
+
+  <!-- セッションストア機能 -->
+  <import file="nablarch/webui/session-store.xml" />
+  <!-- TODO: アプリケーションサーバが冗長化されている場合は、HIDDENストアの暗号化に使用するコンポーネントのプロパティに明示的に暗号化/復号のキーを設定する。-->
+  <!--
+  <component name="hiddenStoreEncryptor" class="nablarch.common.encryption.AesEncryptor">
+    <property name="key" value="1234567890123456" />
+    <property name="iv" value="6543210987654321" />
+  </component>
+  -->
+
+  <!-- ダイアレクト設定 -->
+  <!-- TODO:使用するDBに合わせてダイアレクトを設定すること -->
+  <component name="dialect" class="nablarch.core.db.dialect.OracleDialect" />
+
+
+  <!-- ハンドラキュー構成 -->
+  <component name="webFrontController"
+             class="nablarch.fw.web.servlet.WebFrontController">
+
+    <property name="handlerQueue">
+      <list>
+        <component class="nablarch.fw.web.handler.HttpCharacterEncodingHandler"/>
+
+        <component class="nablarch.fw.handler.GlobalErrorHandler"/>
+
+        <component class="nablarch.fw.web.handler.HttpResponseHandler"/>
+
+        <component class="nablarch.fw.web.handler.SecureHandler" />
+
+        <component-ref name="multipartHandler"/>
+
+        <component-ref name="sessionStoreHandler" />
+
+        <component class="nablarch.fw.web.handler.NormalizationHandler" />
+
+        <component class="nablarch.fw.web.handler.ForwardingHandler"/>
+
+        <component-ref name="httpErrorHandler">
+          <property name="defaultPages">
+            <map>
+              <entry key="4.." value="/WEB-INF/view/common/errorPages/userError.jsp" />
+              <entry key="403" value="/WEB-INF/view/common/errorPages/permissionError.jsp" />
+              <entry key="404" value="/WEB-INF/view/common/errorPages/pageNotFoundError.jsp" />
+              <entry key="413" value="/WEB-INF/view/common/errorPages/requestEntityTooLarge.jsp" />
+              <entry key="5.." value="/WEB-INF/view/common/errorPages/error.jsp" />
+              <entry key="503" value="/WEB-INF/view/common/errorPages/serviceUnavailableError.jsp" />
+            </map>
+          </property>
+        </component-ref>
+
+        <component-ref name="nablarchTagHandler"/>
+
+        <component-ref name="dbConnectionManagementHandler"/>
+
+        <component-ref name="transactionManagementHandler"/>
+
+        <component-ref name="packageMapping"/>
+      </list>
+    </property>
+  </component>
+
+  <component name="jaxrsController"
+             class="nablarch.fw.web.servlet.WebFrontController">
+    <property name="handlerQueue">
+      <list>
+        <component class="nablarch.fw.web.handler.HttpCharacterEncodingHandler"/>
+        <component class="nablarch.fw.handler.GlobalErrorHandler"/>
+        <component class="nablarch.fw.jaxrs.JaxRsResponseHandler"/>
+        <component-ref name="dbConnectionManagementHandler"/>
+        <component-ref name="transactionManagementHandler"/>
+        <component-ref name="jaxrsPackageMapping"/>
+      </list>
+    </property>
+  </component>
+
+  <!-- 初期化が必要なコンポーネント -->
+  <component name="initializer"
+             class="nablarch.core.repository.initialization.BasicApplicationInitializer">
+    <property name="initializeList">
+      <list>
+        <!-- web/session-store.xml:DBストア-->
+        <component-ref name="dbStore" />
+        <!-- パッケージマッピング-->
+        <component-ref name="packageMapping"/>
+        <component-ref name="jaxrsPackageMapping"/>
+      </list>
+    </property>
+  </component>
+
+</component-configuration>
