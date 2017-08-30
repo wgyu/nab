@@ -400,19 +400,6 @@
           </servers>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-war-plugin</artifactId>
-        <configuration>
-          <webXml>${webxml.path}</webXml>
-          <classifier>${env.classifier}</classifier>
-          <archive>
-            <manifestEntries>
-              <Target-Environment>${env.name}</Target-Environment>
-            </manifestEntries>
-          </archive>
-        </configuration>
-      </plugin>
       <!--
       NablarchのテスティングフレームワークがJSPのコンパイル結果を格納するディレクトリを、
       mvn clean時に削除するように設定。
