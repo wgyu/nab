@@ -4,8 +4,8 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://tis.co.jp/nablarch/component-configuration /component-configuration.xsd">
 
-  <!-- プロダクション用の設定読み込み -->
-  <import file="web-component-configuration.xml"/>
+  <!-- プロダクション用の設定読み込み-->
+  <import file="web-component-configuration.xml"/> 
 
 
 </component-configuration>
